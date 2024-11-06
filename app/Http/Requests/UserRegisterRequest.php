@@ -26,12 +26,19 @@ class UserRegisterRequest extends FormRequest
     public function rules()
     {
         return [
-            // Validasi
             "username" => ["required", "max:100", "unique:users,username"],
-            "password" => ["required", "max:100"],
-            "email" => ["required", "email", "unique:users,email"], // Tambahkan validasi email
+            "password" => ["required", "max:100", "regex:/^(?=.*[A-Z])(?=.*\d).+$/"], // Minimal satu huruf kapital dan satu angka
+            "email" => ["required", "email", "unique:users,email"],
             "name" => ["required", "max:255"],
-            "role" => ["required", "in:technical_writer,admin"] // Validasi untuk kolom role sebagai enum
+            "role" => ["required", "in:technical_writer,admin"]
+        ];
+    }
+    
+    public function messages()
+    {
+        return [
+            'password.regex' => 'Password minimal 1 huruf kapital dan 1 angka.',
+    
         ];
     }
 

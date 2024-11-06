@@ -8,11 +8,14 @@ use App\Http\Resources\UserManualResource;
 use App\Http\Requests\UserManualStoreRequest;
 use App\Models\UserManual;
 use App\Models\UserManualHistory;
+use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
+
 
 class UserManualController extends Controller
 {
@@ -57,34 +60,41 @@ class UserManualController extends Controller
     {
         $data = $request->validated();
         $user = Auth::user();
+    
         // Pastikan pengguna terautentikasi
         if (!$user) {
             return response()->json([
                 'message' => 'User not authenticated'
             ], 401);
         }
-
+    
+        // Handle image upload
+        if ($request->hasFile('img')) {
+            $imagePath = $request->file('img')->store('images/user_manuals', 'public'); // Store image in public/images/user_manuals
+            $data['img'] = $imagePath; // Update the data with the path of the stored image
+        }
+    
         // Menggunakan user_id sebagai foreign key
         $userManual = new UserManual($data);
         $userManual->initial_editor = $user->name;
         $userManual->latest_editor = $user->name;
         $userManual->user_id = $user->user_id; 
         $userManual->save();
-    
+        Log::info($request);
         return response()->json([
             'message' => 'User Manual Created',
             'data' => new UserManualResource($userManual)
         ], 201);
     }
+    
 
     public function update(UserManualUpdateRequest $request, int $id) : JsonResponse {
-        
         $user = Auth::user();
-
+        
         // Start the transaction
         return DB::transaction(function () use ($request, $id, $user) {
             $currentUserManual = UserManual::where('user_manual_id', $id)->first();
-
+    
             // Check if the user manual exists
             if (!$currentUserManual) {
                 return response()->json([
@@ -94,21 +104,21 @@ class UserManualController extends Controller
                     ]
                 ], 404);
             }
-
-            // Periksa apakah title dalam request sudah ada di UserManual lainnya
+    
+            // Check if the title in the request already exists in other UserManuals
             $title = $request->input('title');
             $existingTitle = UserManual::where('title', $title)->where('user_manual_id', '!=', $id)->first();
-
+    
             if ($existingTitle) {
                 return response()->json([
                     'message' => 'Failed to update user manual',
                     'errors' => 'Title must be unique. The specified title already exists.'
                 ], 400);
             }
-
+    
             $version = $request->input('version');
             $existingVersion = $currentUserManual->version;
-
+    
             if ($version <= $existingVersion) {
                 return response()->json([
                     'message' => 'Failed to update user manual',
@@ -119,14 +129,22 @@ class UserManualController extends Controller
             // Log the history before updating
             $userManualHistory = new UserManualHistory($currentUserManual->toArray());
             $userManualHistory->save();
-
+    
             // Update the user manual with validated data
             $validatedData = $request->validated(); 
-           
+            
+            // Handle image upload
+            if ($request->hasFile('img')) {
+                // Store image in public/images/user_manuals
+                $imagePath = $request->file('img')->store('images/user_manuals', 'public');
+                $validatedData['img'] = $imagePath; // Update the data with the path of the stored image
+            }
+            
+            Log::info($request);
+
             $validatedData['latest_editor'] = $user->name;
             $currentUserManual->fill($validatedData); 
             $currentUserManual->save();
-
     
             return response()->json([
                 'message' => "Successfully updated user manual by ID : {$id}",
@@ -134,6 +152,7 @@ class UserManualController extends Controller
             ], 200);
         });
     }
+    
 
     public function destroy(int $id) : JsonResponse 
     {
@@ -202,6 +221,7 @@ class UserManualController extends Controller
         Gate::authorize('isAdmin');
 
         $userManual = UserManual::onlyTrashed()->where('user_manual_id', $id)->first();
+        
         // Check if the user manual exists
         if (!$userManual) {
             return response()->json([
@@ -211,13 +231,42 @@ class UserManualController extends Controller
                 ]
             ], 404);
         }
-
+    
+        // Check if an image exists and delete it
+        if ($userManual->img && Storage::disk('public')->exists($userManual->img)) {
+            Storage::disk('public')->delete($userManual->img);
+        }
+    
+        // Permanently delete the user manual
         $userManual->forceDelete();
-
+    
         return response()->json([
-            'message' => 'Successfully Delete Permanent',
+            'message' => 'Successfully Deleted Permanently',
             'data' => new UserManualResource($userManual)
         ]);
-
     }
+
+
+    public function userManualSearch(Request $request): JsonResponse
+{
+    // Ambil kata kunci pencarian dari parameter `q`
+    $searchTerm = $request->input('q');
+
+    // Gunakan Laravel Scout untuk mencari berdasarkan title dan content
+    $userManuals = UserManual::search($searchTerm)->get();
+
+    // Cek jika hasil pencarian kosong
+    if ($userManuals->isEmpty()) {
+        return response()->json([
+            'message' => 'No user manuals found matching your search criteria',
+            'errors' => 'User manual not found'
+        ], 404);
+    }
+
+    // Jika ada hasil, kembalikan dalam JSON
+    return response()->json([
+        'message' => 'Successfully found User Manuals',
+        'data' => new UserManualCollection($userManuals)
+    ]);
+}
 }

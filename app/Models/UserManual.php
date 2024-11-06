@@ -7,10 +7,11 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Laravel\Scout\Searchable;
 
 class UserManual extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory, SoftDeletes,  Searchable;
 
     protected $table = 'user_manuals';
     protected $primaryKey = 'user_manual_id';
@@ -45,6 +46,14 @@ class UserManual extends Model
     public function userManualHistories() : HasMany 
     {
         return $this->hasMany(UserManualHistory::class);
+    }
+
+    public function toSearchableArray()
+    {
+        return [
+            'title' => $this->title,
+            'content' => $this->content,
+        ];
     }
 
 }

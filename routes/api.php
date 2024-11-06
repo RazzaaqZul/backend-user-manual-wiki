@@ -28,6 +28,10 @@ Route::get('/user-manuals', [UserManualController::class, 'index']);
 Route::get('/user-manuals/{id}', [UserManualController::class, 'show'])->where('id', '[0-9]+');
 Route::get('/user-manuals/{id}/histories', [UserManualHistoryController::class, 'index']);
 
+Route::get('/user-manuals/search', [UserManualController::class, 'userManualSearch']);
+
+Route::middleware('auth:sanctum')->get('/user', [AuthController::class, 'user']);
+
 // Protected Routes (require authentication)
 Route::middleware('auth:sanctum')->group(function () {
     // Admin & Technical Writer Routes

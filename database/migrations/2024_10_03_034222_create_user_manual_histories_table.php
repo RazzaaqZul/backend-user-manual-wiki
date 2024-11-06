@@ -17,7 +17,7 @@ return new class extends Migration
             $table->id('user_manual_history_id');
             $table->unsignedBigInteger('user_manual_id');
             $table->string('title', 255)->nullable(false);
-            $table->string('img', 255)->nullable(false);
+            $table->longText('img')->nullable(false);
             $table->string('short_desc', 100)->nullable(false);
             $table->string('initial_editor', 255)->nullable(false);
             $table->string('latest_editor', 255)->nullable(false);

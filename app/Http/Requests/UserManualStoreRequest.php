@@ -28,7 +28,7 @@ class UserManualStoreRequest extends FormRequest
         return [
             // Validasi
             "title" => ["required", "unique:user_manuals,title", "max:100"],
-            "img" => ["required", "max:255"],
+            "img" => ["required"],
             "short_desc" => ["required", "max:100"],
             // "initial_editor" => ["required", "max:100"], // Sesuaikan dengan kolom "creator" yang Anda gunakan
             // "latest_editor" => ["required", "max:100"],
