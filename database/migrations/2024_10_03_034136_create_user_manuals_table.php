@@ -18,7 +18,7 @@ return new class extends Migration
             $table->unsignedBigInteger('user_id')->nullable();
             $table->string('title', 255)->nullable(false)->unique("users_manuals_title_unique");
             $table->longText('img')->nullable(false);
-            $table->string('short_desc', 100)->nullable(false);
+            $table->string('short_desc', 200)->nullable(false);
             $table->string('initial_editor', 255)->nullable(false);
             $table->string('latest_editor', 255)->nullable(false);
             $table->string('version', 255)->nullable(false);

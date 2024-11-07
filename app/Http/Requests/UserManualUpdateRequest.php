@@ -32,7 +32,7 @@ class UserManualUpdateRequest extends FormRequest
             // Validasi
             "title" => ["nullable", "max:100"],
             "img" => ["nullable"],
-            "short_desc" => ["nullable", "max:100"],
+            "short_desc" => ["nullable", "max:200"],
             "initial_edtior" => ["nullable", "max:100"],
             // "latest_editor" => ["required", "max:100"],
             "version" => ["required", "max:100"],

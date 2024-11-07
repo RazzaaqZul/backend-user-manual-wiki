@@ -108,11 +108,13 @@ class UserManualController extends Controller
             // Check if the title in the request already exists in other UserManuals
             $title = $request->input('title');
             $existingTitle = UserManual::where('title', $title)->where('user_manual_id', '!=', $id)->first();
-    
+            Log::warning($existingTitle);
             if ($existingTitle) {
                 return response()->json([
                     'message' => 'Failed to update user manual',
-                    'errors' => 'Title must be unique. The specified title already exists.'
+                    'errors' => [
+                        'title' => 'Title must be unique. The specified title already exists.'
+                        ]
                 ], 400);
             }
     
@@ -122,7 +124,9 @@ class UserManualController extends Controller
             if ($version <= $existingVersion) {
                 return response()->json([
                     'message' => 'Failed to update user manual',
-                    'errors' => 'Version must be higher than ' . $existingVersion
+                    'errors' => [
+                        'version' => 'Version must be higher than ' . $existingVersion
+                        ]
                 ], 400);    
             }
             
