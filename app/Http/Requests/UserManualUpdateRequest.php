@@ -27,7 +27,7 @@ class UserManualUpdateRequest extends FormRequest
     public function rules()
     {
         $userManualId = $this->route('id');
-        Log::warning($userManualId);
+        Log::warning(empty($this->title));
         return [
             // Validasi
             "title" => ["nullable", "max:100"],
@@ -40,13 +40,6 @@ class UserManualUpdateRequest extends FormRequest
             "category" => ["nullable", "in:internal,eksternal"],
             "size" => ["nullable"],
             // 'user_id' => ['required', 'exists:users,user_id'],
-            'at_least_one_field' => [
-                function ($attribute, $value, $fail) {
-                    if (empty($this->title) && empty($this->img) && empty($this->short_desc) && empty($this->creator) && empty($this->content) && empty($this->category) && empty($this->size)) {
-                        $fail('At least one of title, img, short_desc, creator, content, category, or size must be filled.');
-                    }
-                }
-            ],
         ];
     }
     protected function failedValidation(Validator $validator)

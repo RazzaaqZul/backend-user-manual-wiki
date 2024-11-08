@@ -8,6 +8,7 @@ use App\Http\Resources\UserManualResource;
 use App\Http\Requests\UserManualStoreRequest;
 use App\Models\UserManual;
 use App\Models\UserManualHistory;
+use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
@@ -105,16 +106,36 @@ class UserManualController extends Controller
                 ], 404);
             }
     
+            // Check if any of the fields are actually updated
+            $updatedFields = false;
+            $fieldsToCheck = ['title', 'img', 'short_desc', 'category', 'content'];
+            
+            foreach ($fieldsToCheck as $field) {
+                // Compare the current field value with the request's value
+                if ($request->has($field) && $request->input($field) !== $currentUserManual->$field) {
+                    $updatedFields = true;
+                    break;
+                }
+            }
+    
+            if (!$updatedFields) {
+                return response()->json([
+                    'message' => 'Failed to update user manual',
+                    'errors' => [
+                        'update' => 'There are no changes to the edit fields. Please update at least one of the fields: Title, Cover, Short Description, Category, or Contents'
+                    ]
+                ], 400);
+            }
+    
             // Check if the title in the request already exists in other UserManuals
             $title = $request->input('title');
             $existingTitle = UserManual::where('title', $title)->where('user_manual_id', '!=', $id)->first();
-            Log::warning($existingTitle);
             if ($existingTitle) {
                 return response()->json([
                     'message' => 'Failed to update user manual',
                     'errors' => [
                         'title' => 'Title must be unique. The specified title already exists.'
-                        ]
+                    ]
                 ], 400);
             }
     
@@ -126,7 +147,7 @@ class UserManualController extends Controller
                     'message' => 'Failed to update user manual',
                     'errors' => [
                         'version' => 'Version must be higher than ' . $existingVersion
-                        ]
+                    ]
                 ], 400);    
             }
             
@@ -143,17 +164,41 @@ class UserManualController extends Controller
                 $imagePath = $request->file('img')->store('images/user_manuals', 'public');
                 $validatedData['img'] = $imagePath; // Update the data with the path of the stored image
             }
-            
-            Log::info($request);
-
-            $validatedData['latest_editor'] = $user->name;
-            $currentUserManual->fill($validatedData); 
-            $currentUserManual->save();
     
-            return response()->json([
-                'message' => "Successfully updated user manual by ID : {$id}",
-                'data' => new UserManualResource($currentUserManual)
-            ], 200);
+            try {
+                Log::info($request);
+    
+                $validatedData['latest_editor'] = $user->name;
+                $currentUserManual->fill($validatedData); 
+                $currentUserManual->save();
+    
+                return response()->json([
+                    'message' => "Successfully updated user manual by ID : {$id}",
+                    'data' => new UserManualResource($currentUserManual)
+                ], 200);
+    
+            } catch (QueryException $e) {
+                // Log the exception for debugging
+                Log::error('Database query error: ' . $e->getMessage());
+    
+                // Check for unique constraint violation
+                if ($e->getCode() === '23000') {
+                    return response()->json([
+                        'message' => 'Failed to update user manual',
+                        'errors' => [
+                            'title' => 'The title must be unique, but the given title already exists.'
+                        ]
+                    ], 400);
+                }
+    
+                // Handle other database-related errors
+                return response()->json([
+                    'message' => 'An error occurred while updating the user manual.',
+                    'errors' => [
+                        'database' => $e->getMessage()
+                    ]
+                ], 500);
+            }
         });
     }
     
