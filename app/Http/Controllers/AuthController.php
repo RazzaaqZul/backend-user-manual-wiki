@@ -19,13 +19,13 @@ class AuthController extends Controller
     public function login(UserLoginRequest $request) : JsonResponse {
 
         $data = $request->validated();
-        $user = User::where('username', $data['username'])->first();
+        $user = User::where('email', $data['email'])->first();
 
         if(!$user || !Hash::check($data['password'], $user->password)){
             throw new HttpResponseException(response([
                 "message" => "Failed to logged in",
                 "errors" => [
-                        "username or password wrong"
+                        "email or password wrong"
                 ]
             ], 401));
         }

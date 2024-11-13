@@ -70,7 +70,6 @@ class UserController extends Controller
 
         $validatedData = $request->validated();
         // Hanya update jika field tidak null, jika null tetap gunakan data lama
-        $user->username = $validatedData['username'] ?? $user->username;
         $user->name = $validatedData['name'] ?? $user->name;
         $user->role = $validatedData['role'] ?? $user->role;
         $user->save();

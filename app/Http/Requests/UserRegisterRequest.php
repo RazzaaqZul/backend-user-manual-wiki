@@ -26,10 +26,9 @@ class UserRegisterRequest extends FormRequest
     public function rules()
     {
         return [
-            "username" => ["required", "max:100", "unique:users,username"],
             "password" => ["required", "max:100", "regex:/^(?=.*[A-Z])(?=.*\d).+$/"], // Minimal satu huruf kapital dan satu angka
             "email" => ["required", "email", "unique:users,email"],
-            "name" => ["required", "max:255"],
+            "name" => ["required", "max:100"],
             "role" => ["required", "in:technical_writer,admin"]
         ];
     }
@@ -37,8 +36,16 @@ class UserRegisterRequest extends FormRequest
     public function messages()
     {
         return [
-            'password.regex' => 'Password minimal 1 huruf kapital dan 1 angka.',
-    
+            'password.required' => 'Password wajib diisi.',
+            'password.max' => 'Password tidak boleh lebih dari :max karakter.',
+            'password.regex' => 'Password minimal harus mengandung 1 huruf kapital dan 1 angka.',
+            
+            'email.required' => 'Email wajib diisi.',
+            'email.email' => 'Format email tidak valid.',
+            'email.unique' => 'Email sudah digunakan. Harap gunakan email lain.',
+
+            'name.required' => 'Nama lengkap wajib diisi.',
+            'name.max' => 'Nama tidak boleh lebih dari :max karakter.',
         ];
     }
 

@@ -29,8 +29,19 @@ class UserLoginRequest extends FormRequest
     {
         return [
             // Validasi
-            "username" => ['required', 'max:100'],
+            "email" => ['required', 'email', 'max:100'],
             "password" => ["required","max:200"],
+        ];
+    }
+    public function messages(): array
+    {
+        return [
+            'email.required' => 'Email wajib diisi.',
+            'email.email' => 'Format email tidak valid.',
+            'email.max' => 'Email tidak boleh lebih dari :max karakter.',
+
+            'password.required' => 'Password wajib diisi.',
+            'password.max' => 'Password tidak boleh lebih dari :max karakter.',
         ];
     }
 
