@@ -40,6 +40,25 @@ class UserManualStoreRequest extends FormRequest
         ];
     }
 
+    public function messages()
+    {
+        return [
+            "title.required" => "Judul wajib diisi.",
+            "title.unique" => "Judul ini sudah ada dalam sistem.",
+            "title.max" => "Judul tidak boleh lebih dari 100 karakter.",
+            "img.required" => "Gambar harus diunggah.",
+            "short_desc.required" => "Deskripsi singkat wajib diisi.",
+            "short_desc.max" => "Deskripsi singkat tidak boleh lebih dari 200 karakter.",
+            "version.required" => "Versi wajib diisi.",
+            "content.required" => "Konten wajib diisi.",
+            "category.required" => "Kategori wajib diisi.",
+            "category.in" => "Kategori harus berupa 'internal' atau 'eksternal'.",
+            "size.required" => "Ukuran wajib diisi.",
+            "user_id.required" => "ID pengguna wajib diisi.",
+            "user_id.exists" => "ID pengguna tidak ditemukan dalam sistem."
+        ];
+    }
+
     protected function failedValidation(Validator $validator)
     {
         // parameternya adalah response dan status code
