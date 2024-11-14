@@ -30,16 +30,14 @@ class UserManualStoreRequest extends FormRequest
             "title" => ["required", "unique:user_manuals,title", "max:100"],
             "img" => ["required"],
             "short_desc" => ["required", "max:200"],
-            // "initial_editor" => ["required", "max:100"], // Sesuaikan dengan kolom "creator" yang Anda gunakan
-            // "latest_editor" => ["required", "max:100"],
-            "version" => ["required"],  
+            "version" => ["required", "regex:/^\d+\.\d+\.\d+$/"],  // Menambahkan validasi regex untuk version
             "content" => ["required"],
             "category" => ["required", "in:internal,eksternal"],
             "size" => ["required"],
             'user_id' => ['required', 'exists:users,user_id'],
         ];
     }
-
+    
     public function messages()
     {
         return [
@@ -49,7 +47,8 @@ class UserManualStoreRequest extends FormRequest
             "img.required" => "Gambar harus diunggah.",
             "short_desc.required" => "Deskripsi singkat wajib diisi.",
             "short_desc.max" => "Deskripsi singkat tidak boleh lebih dari 200 karakter.",
-            "version.required" => "Versi wajib diisi.",
+            "version.required" => "Versi wajib diisi dalam format X.Y.Z (misalnya 0.0.0).",
+            "version.regex" => "Format versi harus dalam format X.Y.Z (misalnya 0.0.0).", // Pesan error untuk regex
             "content.required" => "Konten wajib diisi.",
             "category.required" => "Kategori wajib diisi.",
             "category.in" => "Kategori harus berupa 'internal' atau 'eksternal'.",
@@ -58,7 +57,7 @@ class UserManualStoreRequest extends FormRequest
             "user_id.exists" => "ID pengguna tidak ditemukan dalam sistem."
         ];
     }
-
+    
     protected function failedValidation(Validator $validator)
     {
         // parameternya adalah response dan status code
