@@ -36,9 +36,9 @@ class UserRegisterRequest extends FormRequest
     public function messages()
     {
         return [
-            'password.required' => 'Password wajib diisi.',
-            'password.max' => 'Password tidak boleh lebih dari :max karakter.',
-            'password.regex' => 'Password minimal harus mengandung 1 huruf kapital dan 1 angka.',
+            'password.required' => 'Kata sandi wajib diisi.',
+            'password.max' => 'Kata sandi tidak boleh lebih dari :max karakter.',
+            'password.regex' => 'Kata sandi minimal mengandung 1 huruf kapital dan 1 angka.',
             
             'email.required' => 'Email wajib diisi.',
             'email.email' => 'Format email tidak valid.',

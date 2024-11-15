@@ -23,6 +23,7 @@ class UserManualResource extends JsonResource
                 "initial_editor" => $this->initial_editor,
                 "latest_editor" => $this->latest_editor,
                 "version" => $this->version,
+                "update_desc" => $this->update_desc,
                 "content" => $this->content,
                 "category" => $this->category,
                 "size" => $this->size,

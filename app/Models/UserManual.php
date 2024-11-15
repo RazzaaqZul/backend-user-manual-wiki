@@ -31,7 +31,8 @@ class UserManual extends Model
         'content',
         'category',
         'size',
-        'user_id'
+        'user_id',
+        'update_desc'
     ];
 
     /**

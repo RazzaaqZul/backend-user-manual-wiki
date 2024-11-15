@@ -35,6 +35,7 @@ class UserManualStoreRequest extends FormRequest
             "category" => ["required", "in:internal,eksternal"],
             "size" => ["required"],
             'user_id' => ['required', 'exists:users,user_id'],
+            "update_desc" => ["nullable", "max:200"],
         ];
     }
     
@@ -47,6 +48,7 @@ class UserManualStoreRequest extends FormRequest
             "img.required" => "Gambar harus diunggah.",
             "short_desc.required" => "Deskripsi singkat wajib diisi.",
             "short_desc.max" => "Deskripsi singkat tidak boleh lebih dari 200 karakter.",
+           
             "version.required" => "Versi wajib diisi dalam format X.Y.Z (misalnya 0.0.0).",
             "version.regex" => "Format versi harus dalam format X.Y.Z (misalnya 0.0.0).", // Pesan error untuk regex
             "content.required" => "Konten wajib diisi.",

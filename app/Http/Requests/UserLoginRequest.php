@@ -40,8 +40,8 @@ class UserLoginRequest extends FormRequest
             'email.email' => 'Format email tidak valid.',
             'email.max' => 'Email tidak boleh lebih dari :max karakter.',
 
-            'password.required' => 'Password wajib diisi.',
-            'password.max' => 'Password tidak boleh lebih dari :max karakter.',
+            'password.required' => 'Kata sandi wajib diisi.',
+            'password.max' => 'Kata sandi tidak boleh lebih dari :max karakter.',
         ];
     }
 

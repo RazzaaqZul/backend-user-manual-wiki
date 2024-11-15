@@ -33,6 +33,7 @@ class UserManualCollection extends ResourceCollection
                 "category" => $userManual->category,
                 "size" => $userManual->size,
                 "user_id" => $userManual->user_id,
+                "update_desc" => $userManual->update_desc,
                 "created_at" => $userManual->created_at->format('Y-m-d H:i:s'),
                 "updated_at" => $userManual->updated_at->format('Y-m-d H:i:s'),
             ];

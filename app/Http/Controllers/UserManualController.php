@@ -89,14 +89,13 @@ class UserManualController extends Controller
     }
     
 
-    public function update(UserManualUpdateRequest $request, int $id) : JsonResponse {
+    public function update(UserManualUpdateRequest $request, int $id): JsonResponse 
+    {
         $user = Auth::user();
-        
-        // Start the transaction
+      
         return DB::transaction(function () use ($request, $id, $user) {
             $currentUserManual = UserManual::where('user_manual_id', $id)->first();
     
-            // Check if the user manual exists
             if (!$currentUserManual) {
                 return response()->json([
                     'message' => "Failed to update User Manuals",
@@ -106,12 +105,11 @@ class UserManualController extends Controller
                 ], 404);
             }
     
-            // Check if any of the fields are actually updated
+            // Check for field updates
             $updatedFields = false;
             $fieldsToCheck = ['title', 'img', 'short_desc', 'category', 'content'];
             
             foreach ($fieldsToCheck as $field) {
-                // Compare the current field value with the request's value
                 if ($request->has($field) && $request->input($field) !== $currentUserManual->$field) {
                     $updatedFields = true;
                     break;
@@ -122,54 +120,64 @@ class UserManualController extends Controller
                 return response()->json([
                     'message' => 'Failed to update user manual',
                     'errors' => [
-                        'update' => 'There are no changes to the edit fields. Please update at least one of the fields: Title, Cover, Short Description, Category, or Contents'
+                        'update' => 'Tidak ada perubahan pada kolom. Harap perbarui setidaknya satu kolom: Judul, Sampul, Kategori, atau Isi'
                     ]
                 ], 400);
             }
     
-            // Check if the title in the request already exists in other UserManuals
+            // Check unique title
             $title = $request->input('title');
-            $existingTitle = UserManual::where('title', $title)->where('user_manual_id', '!=', $id)->first();
+            $existingTitle = UserManual::where('title', $title)
+                                     ->where('user_manual_id', '!=', $id)
+                                     ->first();
             if ($existingTitle) {
                 return response()->json([
                     'message' => 'Failed to update user manual',
                     'errors' => [
-                        'title' => 'Title must be unique. The specified title already exists.'
+                        'title' => 'Judul harus unik. Judul yang ditentukan telah dipakai.'
                     ]
                 ], 400);
             }
     
-            $version = $request->input('version');
-            $existingVersion = $currentUserManual->version;
-    
-            if ($version <= $existingVersion) {
+            // Version comparison logic
+            $newVersion = $request->input('version');
+            $currentVersion = $currentUserManual->version;
+            
+            if (!$this->isValidVersionFormat($newVersion)) {
                 return response()->json([
                     'message' => 'Failed to update user manual',
                     'errors' => [
-                        'version' => 'Version must be higher than ' . $existingVersion
+                        'version' => 'Format versi tidak valid. Gunakan format X.X.X (misalnya, 1.1.2).'
                     ]
-                ], 400);    
+                ], 400);
+            }
+
+            if (!$this->isNewVersionHigher($newVersion, $currentVersion)) {
+                return response()->json([
+                    'message' => 'Failed to update user manual',
+                    'errors' => [
+                        'version' => "Versi harus lebih tinggi dari {$currentVersion}"
+                    ]
+                ], 400);
             }
             
-            // Log the history before updating
+            // Log history before updating
             $userManualHistory = new UserManualHistory($currentUserManual->toArray());
             $userManualHistory->save();
     
-            // Update the user manual with validated data
-            $validatedData = $request->validated(); 
+            // Update manual with validated data
+            $validatedData = $request->validated();
             
-            // Handle image upload
             if ($request->hasFile('img')) {
-                // Store image in public/images/user_manuals
                 $imagePath = $request->file('img')->store('images/user_manuals', 'public');
-                $validatedData['img'] = $imagePath; // Update the data with the path of the stored image
+                $validatedData['img'] = $imagePath;
             }
     
             try {
                 Log::info($request);
     
                 $validatedData['latest_editor'] = $user->name;
-                $currentUserManual->fill($validatedData); 
+                $currentUserManual->fill($validatedData);
                 $currentUserManual->save();
     
                 return response()->json([
@@ -178,10 +186,8 @@ class UserManualController extends Controller
                 ], 200);
     
             } catch (QueryException $e) {
-                // Log the exception for debugging
                 Log::error('Database query error: ' . $e->getMessage());
     
-                // Check for unique constraint violation
                 if ($e->getCode() === '23000') {
                     return response()->json([
                         'message' => 'Failed to update user manual',
@@ -191,7 +197,6 @@ class UserManualController extends Controller
                     ], 400);
                 }
     
-                // Handle other database-related errors
                 return response()->json([
                     'message' => 'An error occurred while updating the user manual.',
                     'errors' => [
@@ -201,6 +206,38 @@ class UserManualController extends Controller
             }
         });
     }
+
+
+     /**
+     * Validate version format (X.X.X)
+     */
+    private function isValidVersionFormat(string $version): bool
+    {
+        return preg_match('/^\d+\.\d+\.\d+$/', $version);
+    }
+
+    /**
+     * Compare versions properly
+     */
+    private function isNewVersionHigher(string $newVersion, string $currentVersion): bool
+    {
+        $new = array_map('intval', explode('.', $newVersion));
+        $current = array_map('intval', explode('.', $currentVersion));
+
+        // Compare major version
+        if ($new[0] !== $current[0]) {
+            return $new[0] > $current[0];
+        }
+
+        // Compare minor version
+        if ($new[1] !== $current[1]) {
+            return $new[1] > $current[1];
+        }
+
+        // Compare patch version
+        return $new[2] > $current[2];
+    }
+
     
 
     public function destroy(int $id) : JsonResponse 

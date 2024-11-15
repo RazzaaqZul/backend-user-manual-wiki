@@ -27,7 +27,8 @@ class UserManualHistory extends Model
         'content',
         'category',
         'size',
-        'user_manual_id'
+        'user_manual_id',
+        'update_desc'
     ];
 
     /**

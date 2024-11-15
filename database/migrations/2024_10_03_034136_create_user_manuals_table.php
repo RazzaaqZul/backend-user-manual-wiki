@@ -22,6 +22,7 @@ return new class extends Migration
             $table->string('initial_editor', 255)->nullable(false);
             $table->string('latest_editor', 255)->nullable(false);
             $table->string('version', 255)->nullable(false);
+            $table->string('update_desc', 200)->nullable();
             $table->longText('content')->nullable(false);
             $table->enum('category', ['internal', 'eksternal'])->nullable(false);
             $table->string('size', 255)->nullable(false);
