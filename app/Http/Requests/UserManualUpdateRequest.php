@@ -54,7 +54,7 @@ class UserManualUpdateRequest extends FormRequest
             "version.required" => "Versi harus diisi.",
             "version.regex" => "Format versi harus dalam format X.Y.Z (misalnya 0.0.0).",
             "version.max" => "Versi tidak boleh lebih dari 100 karakter.",
-            "update_desc.required" => "Deskripsi Perubahan singkat wajib diisi.",
+            "update_desc.required" => "Deskripsi Perubahan wajib diisi.",
             "update_desc.max" => "Deskripsi Perubahan tidak boleh lebih dari 200 karakter.",
             "content.nullable" => "Konten opsional, jika tidak diubah, biarkan kosong.",
             "category.in" => "Kategori harus berupa 'internal' atau 'eksternal'.",
