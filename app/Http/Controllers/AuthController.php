@@ -19,7 +19,7 @@ class AuthController extends Controller
     public function login(UserLoginRequest $request) : JsonResponse {
 
         $data = $request->validated();
-        $user = User::where('email', $data['email'])->first();
+        $user = User::whereRaw('BINARY email = ?', [$data['email']])->first();
 
         if(!$user || !Hash::check($data['password'], $user->password)){
             throw new HttpResponseException(response([
